@@ -1,0 +1,5 @@
+__pycache__/*
+data/*
+results/*
+scratch/*
+.DS_Store
