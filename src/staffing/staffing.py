@@ -1,9 +1,7 @@
 """Tools used to analyze the teaching hours for ICM"""
 from datetime import datetime
 from dataclasses import dataclass
-from openpyxl import load_workbook
-from openpyxl.utils import get_column_letter
-
+import staffing.classification_en as classification
 
 # How to categorize the different types of events
 # EVENT_TYPES = {"Föreläsning": ["Föreläsning", "Introduktion", "Upprop"],
@@ -15,26 +13,34 @@ from openpyxl.utils import get_column_letter
 #                               "Möte", "Problemlösning", "Övrigt", "Redovisning",
 #                               "Konferens"],
 #                               "Exkursion": ["Studiebesök"]}
-EVENT_TYPES = {
-    "Föreläsning": ["Föreläsning", "Introduktion", "Upprop"],
-    "Laboration": ["Laboration", "Datorlab", "Tutorials"],
-    "Exkursion": ["Studiebesök"],
-    "Seminarium": ["Seminarium", "Frågestund", "Presentation",
-                   "Fall", "Lektion", "Övning", "Workshop",
-                   "Diskussion", "Case", "Räkneövning",
-                   "Grupparbete", "Symposium", "Projekt",
-                   "Problemlösning", "Redovisning"],
-}
+# EVENT_TYPES = {
+#     "Föreläsning": ["Föreläsning", "Introduktion", "Upprop"],
+#     "Laboration": ["Laboration", "Datorlab", "Tutorials"],
+#     "Exkursion": ["Studiebesök"],
+#     "Seminarium": ["Seminarium", "Frågestund", "Presentation",
+#                    "Fall", "Lektion", "Övning", "Workshop",
+#                    "Diskussion", "Case", "Räkneövning",
+#                    "Grupparbete", "Symposium", "Projekt",
+#                    "Problemlösning", "Redovisning"],
+# }
 
 
-WEIGHT_FACTORS = {"Föreläsning": 4,
-                  "Laboration": 2,
-                  "Seminarium": 1.5,
-                  "Exkursion": 1.5,
-                  "Okänd": 2}
+WEIGHT_FACTORS = {classification.Events.LECTURE: 4,
+                  classification.Events.LABORATORY: 2,
+                  classification.Events.SEMINAR: 1.5,
+                  classification.Events.EXCURSION: 1.5,
+                  classification.Events.UNKNOWN: 2}
 WEIGHT_FACTORS_PHD = WEIGHT_FACTORS.copy()
 WEIGHT_FACTORS_PHD["Föreläsning"] = 8
 
+
+PROGRAMS = ["bbbi",
+            "mikrobiologi-immunologi",
+            "molekylarbiologi",
+            "molekylar-biofysik",
+            "molekylar-evolution",
+            "molekylar-systembiologi",
+            "strukturbiologi"]
 
 
 @dataclass(frozen=True)
@@ -84,18 +90,6 @@ def name_to_person(name: str, people: list) -> Person:
     raise ValueError(f"Could not find person {name}")
 
 
-def make_columns_larger(filename: str) -> None:
-    """Make the columns in the excel file larger"""
-    wb = load_workbook(filename)
-    for sheet_name in wb.sheetnames:
-        sheet = wb[sheet_name]
-        for col in sheet.columns:
-            length = max(len(str(cell.value)) for cell in col)
-            sheet.column_dimensions[get_column_letter(col[0].column)].width = length + 2
-
-    wb.save(filename)
-
-
 def get_factors_for_person(person: Person) -> dict:
     """Return the weight factors for a person"""
     if is_phd_student(person):
@@ -104,10 +98,10 @@ def get_factors_for_person(person: Person) -> dict:
         return WEIGHT_FACTORS
 
 
-def identify_event_type(event: dict) -> str:
+def identify_event_type(description: str) -> str:
     """Identify the type of event"""
-    for event_type, keywords in EVENT_TYPES.items():
+    for event_type, keywords in classification.EVENT_TYPES.items():
         for keyword in keywords:
-            if keyword in event["Kursnamn"]:
+            if keyword.lower() in description.lower():
                 return event_type
-    return "Okänd"
+    return classification.Events.UNKNOWN

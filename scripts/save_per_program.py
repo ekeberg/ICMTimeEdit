@@ -3,7 +3,7 @@ from collections import defaultdict
 import pickle
 import numpy
 import pandas
-import staffing
+import staffing.staffing as staffing
 
 INPUT_FILE = "data/personal_frames.pkl"
 OUTPUT_FILE = "results/Bemanning2023.xlsx"

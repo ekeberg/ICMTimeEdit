@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "StaffingICM"
+version = "0.1.0"
+authors = [{name = "Tomas Ekeberg", email = "tomas.ekeberg@icm.uu.se"}]
+description = "Tools do condense staffing data for teachers at ICM from TimeEdit"
+
+[project.scripts]
+icm_download_names = "staffing.scripts.download_names:main"
+icm_save_program_tables = "staffing.scripts.save_program_tables:main"
+
+[tools.setuptools]
+packages = [{include = "staffing", from  = "src"}]

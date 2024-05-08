@@ -5,7 +5,7 @@ import pathlib
 import pickle
 import pandas
 import numpy
-import staffing
+import staffing.staffing as staffing
 
 
 FRAME_FILE = pathlib.Path("data/personal_frames.pkl")
